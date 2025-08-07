@@ -58,7 +58,7 @@ public class BookingServiceTest {
         booking = new Booking(101L, "COMPLETED", LocalDate.of(2025, 7, 31), bus, "TestUser");
         booking.setId(1L);
 
-        payment = new Payment(1L, 2200.00, "COMPLETED", booking.getId());
+        payment = new Payment(booking.getId(), 2200.00, "COMPLETED", LocalDateTime.now());
     }
 
 

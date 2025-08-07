@@ -42,6 +42,5 @@ public class ControllerExceptionHandlerTest {
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertEquals("Something went wrong", response.getBody().getMessage());
-        //assertEquals("An unexpected error occurred", response.getBody());
     }
 }

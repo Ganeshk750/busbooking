@@ -29,7 +29,4 @@ public class Payment {
         this.status = status;
         this.paymentTime = paymentTime;
     }
-
-    public Payment(long bookingId, double amount, String completed, Long id) {
-    }
 }

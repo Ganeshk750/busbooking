@@ -1,9 +1,7 @@
 package com.hcltech.busbooking.exception;
 
 public class NoSeatExistsException extends RuntimeException{
-    private String message;
-
-    public NoSeatExistsException() {}
+    String message;
 
     public NoSeatExistsException(String msg) {
         super(msg);

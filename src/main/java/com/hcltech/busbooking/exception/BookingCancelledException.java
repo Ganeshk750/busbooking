@@ -1,9 +1,8 @@
 package com.hcltech.busbooking.exception;
 
 public class BookingCancelledException extends RuntimeException{
-    private String message;
 
-    public BookingCancelledException() {}
+    String message;
 
     public BookingCancelledException(String msg) {
         super(msg);
