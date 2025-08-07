@@ -4,7 +4,7 @@ import com.hcltech.busbooking.dto.BookingDto;
 import com.hcltech.busbooking.dto.UserBookingHistoryDto;
 import com.hcltech.busbooking.exception.BookingCancelledException;
 import com.hcltech.busbooking.exception.NoSeatExistsException;
-import com.hcltech.busbooking.mapper.EntityMapper;
+import com.hcltech.busbooking.mapper.BookingMapper;
 import com.hcltech.busbooking.model.Booking;
 import com.hcltech.busbooking.model.Bus;
 import com.hcltech.busbooking.model.Payment;
@@ -34,7 +34,7 @@ public class BookingServiceImpl implements BookingService {
         if(bus.getAvailableSeats() <= 0) throw new NoSeatExistsException("No seats");
         bus.setAvailableSeats(bus.getAvailableSeats() - 1);
         busRepository.save(bus);
-        Booking booking = EntityMapper.bookingMapper(bookingDto, bus);
+        Booking booking = BookingMapper.bookingMapper(bookingDto, bus);
         Booking savedBooking = bookingRepository.save(booking);
         Payment payment = paymentService.pay(savedBooking.getId(), bus.getFareCharge());
         savedBooking.setPaymentId(payment.getId());

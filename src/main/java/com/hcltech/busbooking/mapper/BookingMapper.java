@@ -6,7 +6,11 @@ import com.hcltech.busbooking.model.Booking;
 import com.hcltech.busbooking.model.Bus;
 
 
-public class EntityMapper {
+public class BookingMapper {
+
+
+    private BookingMapper() {
+    }
 
     public static Booking bookingMapper(BookingDto bookingDto, Bus bus){
         Booking booking = new Booking();
