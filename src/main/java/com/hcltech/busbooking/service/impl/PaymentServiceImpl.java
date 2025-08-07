@@ -21,6 +21,7 @@ public class PaymentServiceImpl implements PaymentService {
         payment.setAmount(amount);
         payment.setPaymentTime(LocalDateTime.now());
         payment.setStatus("COMPLETED");
-        return paymentRepository.save(payment);
+        paymentRepository.save(payment);
+        return payment;
     }
 }

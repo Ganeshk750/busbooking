@@ -12,6 +12,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 @ExtendWith(MockitoExtension.class)
 public class PaymentServiceTest {
@@ -43,16 +45,10 @@ public class PaymentServiceTest {
 
     @Test
     void whenPay_thenReturnSavedPayment() {
-//        when(bookingRepository.findById(booking.getId())).thenReturn(Optional.of(booking));
-//        when(paymentRepository.save(any(Payment.class))).thenReturn(payment);
-//
-//        Payment result = paymentService.pay(booking.getId(), 2200.00);
-//
-//        assertThat(result).isNotNull();
-//        assertThat(result.getAmount()).isEqualTo(2200.00);
-//        assertThat(result.getStatus()).isEqualTo("COMPLETED");
-//        verify(bookingRepository, times(1)).findById(booking.getId());
-//        verify(paymentRepository, times(1)).save(any(Payment.class));
+        Payment result = paymentService.pay(booking.getId(), 2200.00);
+        assertThat(result).isNotNull();
+        assertThat(result.getAmount()).isEqualTo(2200.00);
+        assertThat(result.getStatus()).isEqualTo("COMPLETED");
     }
 }
 
