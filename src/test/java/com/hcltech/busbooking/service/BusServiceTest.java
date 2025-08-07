@@ -52,9 +52,6 @@ public class BusServiceTest {
     @Test
     void whenSearch_thenReturnMatchingBuses() {
         LocalDate date = LocalDate.of(2025, 7, 31);
-        LocalDateTime start = date.atStartOfDay();
-        LocalDateTime end = date.atTime(LocalTime.MAX);
-
         List<Bus> expectedBuses = List.of(sampleBus);
 
         when(busRepository.findBySourceAndDestinationAndDepartureTimeBetween(
