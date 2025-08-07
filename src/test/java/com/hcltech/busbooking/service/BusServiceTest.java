@@ -39,6 +39,14 @@ public class BusServiceTest {
     }
 
     @Test
+    void whenBusAlreadyAdded_thenReturnConfirmationMessage() {
+        when(busRepository.findByRegistrationNo(sampleBus.getRegistrationNo())).thenReturn(sampleBus);
+        String result = busService.addBus(sampleBus);
+        assertEquals("Bus Already exists!", result);
+        verify(busRepository, never()).save(any(Bus.class));
+    }
+
+    @Test
     void whenAddBus_thenReturnConfirmationMessage() {
         when(busRepository.save(any(Bus.class))).thenReturn(sampleBus);
 
