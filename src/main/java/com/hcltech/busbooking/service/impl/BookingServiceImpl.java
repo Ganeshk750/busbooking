@@ -3,7 +3,6 @@ package com.hcltech.busbooking.service.impl;
 import com.hcltech.busbooking.dto.BookingDto;
 import com.hcltech.busbooking.dto.UserBookingHistoryDto;
 import com.hcltech.busbooking.exception.BookingCancelledException;
-import com.hcltech.busbooking.exception.BusNotFoundException;
 import com.hcltech.busbooking.exception.DuplicateBookingException;
 import com.hcltech.busbooking.exception.NoSeatExistsException;
 import com.hcltech.busbooking.mapper.BookingMapper;
