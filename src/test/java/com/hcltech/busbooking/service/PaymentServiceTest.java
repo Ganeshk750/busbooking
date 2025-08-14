@@ -50,5 +50,6 @@ public class PaymentServiceTest {
         assertThat(result.getAmount()).isEqualTo(2200.00);
         assertThat(result.getStatus()).isEqualTo("COMPLETED");
     }
+
 }
 

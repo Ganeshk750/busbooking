@@ -18,12 +18,12 @@ public class Bus {
     private String source;
     private String destination;
     private LocalDateTime departureTime;
-    private int availableSeats;
-    private double fareCharge;
+    private Integer availableSeats;
+    private Double fareCharge;
     private String registrationNo;
 
 
-    public Bus(String source, String destination, LocalDateTime departureTime, int availableSeats, double fareCharge, String registrationNo) {
+    public Bus(String source, String destination, LocalDateTime departureTime, Integer availableSeats, Double fareCharge, String registrationNo) {
         this.source = source;
         this.destination = destination;
         this.departureTime = departureTime;

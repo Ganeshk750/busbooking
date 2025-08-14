@@ -72,7 +72,7 @@ public class BookingServiceTest {
                     b.setId(1L);
                     return b;
                 });
-        when(paymentService.pay(1L, bus.getFareCharge())).thenReturn(payment);
+        when(paymentService.pay(booking.getId(), bus.getFareCharge())).thenReturn(payment);
 
         BookingDto request = new BookingDto();
         request.setUserName("TestUser");

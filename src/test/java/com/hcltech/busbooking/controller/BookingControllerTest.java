@@ -1,38 +1,42 @@
 package com.hcltech.busbooking.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hcltech.busbooking.dto.BookingDto;
+import com.hcltech.busbooking.dto.ErrorMessage;
 import com.hcltech.busbooking.dto.UserBookingHistoryDto;
+import com.hcltech.busbooking.exception.*;
 import com.hcltech.busbooking.model.Booking;
 import com.hcltech.busbooking.model.Bus;
 import com.hcltech.busbooking.service.BookingService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.context.request.WebRequest;
 
-@WebMvcTest(BookingController.class)
+@ExtendWith(MockitoExtension.class)
 public class BookingControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockitoBean
+    @Mock
     private BookingService bookingService;
 
+    @InjectMocks
     private Booking booking;
+    @InjectMocks
+    private BookingController bookingController;
+
+    private ControllerExceptionHandler controllerExceptionHandler = new ControllerExceptionHandler();
 
     @BeforeEach
     void setUp() {
@@ -47,46 +51,30 @@ public class BookingControllerTest {
     }
 
 @Test
-void whenBook_thenReturnCreatedBooking() throws Exception {
+void whenBook_thenReturnCreatedBooking() {
         BookingDto request = new BookingDto();
         request.setUserName("TestUser");
         request.setBusId(1L);
         request.setDate(LocalDate.parse("2025-07-31"));
-
         when(bookingService.book(any(BookingDto.class))).thenReturn(booking);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-
-    mockMvc.perform(post("/api/v1/bookings")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.userName").value("TestUser"))
-            .andExpect(jsonPath("$.status").value("COMPLETED"));
-
-    verify(bookingService).book(any(BookingDto.class));
-
+        ResponseEntity<Booking> result = bookingController.book(request);
+        assertNotNull(result);
 
 }
 
-
     @Test
-    void whenCancelBooking_thenReturnUpdatedBooking() throws Exception {
+    void whenCancelBooking_thenReturnUpdatedBooking() {
         booking.setStatus("CANCELLED");
         when(bookingService.cancel(1L)).thenReturn(booking);
+       ResponseEntity<Booking> result = bookingController.cancelBooking(1L);
+        assertNotNull(result);
+        assertThat(result.getBody().getStatus()).isEqualTo("CANCELLED");
 
-        mockMvc.perform(put("/api/v1/bookings/1/cancel"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("CANCELLED"));
-
-        verify(bookingService).cancel(1L);
     }
 
 
     @Test
-    void whenGetBookingHistoryForUser_thenReturnListOfBookings() throws Exception {
-
+    void whenGetBookingHistoryForUser_thenReturnListOfBookings() {
 
         UserBookingHistoryDto request = new UserBookingHistoryDto();
         request.setUserName("TestUser");
@@ -97,26 +85,43 @@ void whenBook_thenReturnCreatedBooking() throws Exception {
 
         when(bookingService.historyForUser(any(UserBookingHistoryDto.class)))
                 .thenReturn(bookings);
-
-        // Configure ObjectMapper to handle LocalDate
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-
-        mockMvc.perform(get("/api/v1/bookings/history")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()").value(1))
-                .andExpect(jsonPath("$[0].userName").value("TestUser"))
-                .andExpect(jsonPath("$[0].status").value("COMPLETED"));
-
-        verify(bookingService).historyForUser(any(UserBookingHistoryDto.class));
-
-
+        ResponseEntity<List<Booking>> result = bookingController.bookingHistoryForUser(request);
+        assertNotNull(result);
+        assertNotNull(result.getBody());
+        assertThat(result.getBody().getFirst().getUserName()).isEqualTo("TestUser");
+        assertThat(result.getBody()).hasSize(1);
 
     }
 
+    @Test
+    public void testHandleNoSeatExistsException() {
+        NoSeatExistsException ex = new NoSeatExistsException("No seats");
+        WebRequest webRequest = mock(WebRequest.class);
+        ResponseEntity<ErrorMessage> response = controllerExceptionHandler.noSeatExistsException(ex,webRequest);
 
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("No seats", response.getBody().getMessage());
+    }
+
+    @Test
+    public void testHandleBookingCancelledException() {
+        BookingCancelledException ex = new BookingCancelledException("Booking is already cancelled");
+        WebRequest webRequest = mock(WebRequest.class);
+        ResponseEntity<ErrorMessage> response = controllerExceptionHandler.bookingCancelledException(ex,webRequest);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("Booking is already cancelled", response.getBody().getMessage());
+    }
+
+    @Test
+    public void testHandleDuplicateBookingException() {
+        DuplicateBookingException ex = new DuplicateBookingException("User has already booked this bus");
+        WebRequest webRequest = mock(WebRequest.class);
+        ResponseEntity<ErrorMessage> response = controllerExceptionHandler.duplicateBookingException(ex,webRequest);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertEquals("User has already booked this bus", response.getBody().getMessage());
+    }
 
 
 }

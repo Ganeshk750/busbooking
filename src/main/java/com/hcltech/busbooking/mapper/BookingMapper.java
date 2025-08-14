@@ -5,12 +5,9 @@ import com.hcltech.busbooking.dto.BookingDto;
 import com.hcltech.busbooking.model.Booking;
 import com.hcltech.busbooking.model.Bus;
 
-
 public class BookingMapper {
 
-
-    private BookingMapper() {
-    }
+    private BookingMapper(){}
 
     public static Booking bookingMapper(BookingDto bookingDto, Bus bus){
         Booking booking = new Booking();
@@ -20,4 +17,5 @@ public class BookingMapper {
         booking.setStatus("BOOKED");
         return booking;
     }
+
 }

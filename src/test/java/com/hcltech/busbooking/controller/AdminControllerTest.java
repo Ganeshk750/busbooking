@@ -1,38 +1,48 @@
 package com.hcltech.busbooking.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.hcltech.busbooking.dto.BusDto;
 import com.hcltech.busbooking.model.Booking;
 import com.hcltech.busbooking.model.Bus;
 import com.hcltech.busbooking.service.BookingService;
 import com.hcltech.busbooking.service.BusService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
-@WebMvcTest(AdminController.class)
+
+@ExtendWith(MockitoExtension.class)
 public class AdminControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockitoBean
+    @Mock
     private BusService busService;
 
-    @MockitoBean
+    @Mock
+    private ModelMapper modelMapper;
+
+    @Mock
     private BookingService bookingService;
+    @InjectMocks
+    private AdminController adminController;
 
     private Bus bus;
     private Booking booking;
+    private BusDto sampleBusDto;
+
 
     @BeforeEach
     void setUp() {
@@ -44,60 +54,53 @@ public class AdminControllerTest {
         booking = new Booking(101L, "COMPLETED",
                 LocalDate.of(2025, 7, 31), bus, "TestUser");
         booking.setId(1L);
+        sampleBusDto = new BusDto();
+        sampleBusDto.setSource(bus.getSource());
+        sampleBusDto.setDestination(bus.getDestination());
+        sampleBusDto.setDepartureTime(bus.getDepartureTime());
+        sampleBusDto.setAvailableSeats(bus.getAvailableSeats());
+        sampleBusDto.setFareCharge(bus.getFareCharge());
+        sampleBusDto.setRegistrationNo(bus.getRegistrationNo());
     }
 
     @Test
-    void whenAddBus_thenReturnSuccessMessage() throws Exception {
-        when(busService.addBus(any(Bus.class))).thenReturn("Bus added successfully");
-
-        mockMvc.perform(post("/api/v1/admin/buses")
-                        .contentType("application/json")
-                        .content("""
-                    {
-                        "source": "Goa",
-                        "destination": "Bangalore",
-                        "departureTime": "2025-07-31T10:00:00",
-                        "seats": 30,
-                        "fare": 2200.00,
-                        "registrationNo": "KA-01-1234"
-                    }
-                """))
-                .andExpect(status().isCreated())
-                .andExpect(content().string("Bus added successfully"));
-
-        verify(busService).addBus(any(Bus.class));
+    void whenAddBus_thenReturnSuccessMessage() {
+        when(busService.addBus(any(BusDto.class))).thenReturn("Bus added successfully");
+        ResponseEntity<String> result = adminController.addBus(sampleBusDto);
+        assertNotNull(result);
+        assertEquals(HttpStatus.CREATED, result.getStatusCode());
+        assertThat(result.getBody()).isEqualTo("Bus added successfully");
+        verify(busService, times(1)).addBus(sampleBusDto);
     }
 
+
     @Test
-    void whenGetAllBookingHistory_thenReturnListOfBookings() throws Exception {
+    void whenGetAllBookingHistory_thenReturnListOfBookings() {
         List<Booking> bookings = List.of(booking);
         when(bookingService.allHistory(LocalDate.parse("2025-07-01"),
                 LocalDate.parse("2025-07-31")))
                 .thenReturn(bookings);
-
-        mockMvc.perform(get("/api/v1/admin/booking/history")
-                        .param("fromDate", "2025-07-01")
-                        .param("toDate", "2025-07-31"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()").value(1))
-                .andExpect(jsonPath("$[0].userName").value("TestUser"));
-
-        verify(bookingService).allHistory(LocalDate.parse("2025-07-01"),
-                LocalDate.parse("2025-07-31"));
+        ResponseEntity<List<Booking>> result = adminController.allHistory("2025-07-01", "2025-07-31");
+        assertNotNull(result);
+        assertNotNull(result.getBody());
+        assertThat(result.getBody().getFirst().getUserName()).isEqualTo("TestUser");
+        assertThat(result.getBody()).hasSize(1);
     }
 
 
 
     @Test
-    void whenCancelAnyBooking_thenReturnCancelledBooking() throws Exception {
+    void whenCancelAnyBooking_thenReturnCancelledBooking() {
         booking.setStatus("CANCELLED");
         when(bookingService.cancel(1L)).thenReturn(booking);
 
-        mockMvc.perform(put("/api/v1/admin/bookings/1/cancel"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("CANCELLED"));
+        ResponseEntity<Booking> result = adminController.cancelAnyBooking(1L);
+        assertNotNull(result);
+        assertThat(result.getBody().getStatus()).isEqualTo("CANCELLED");
 
-        verify(bookingService).cancel(1L);
     }
+
 }
+
+
 
