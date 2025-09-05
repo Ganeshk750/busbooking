@@ -11,7 +11,6 @@ import java.util.List;
 import com.sample.busbooking.dto.BookingDto;
 import com.sample.busbooking.dto.ErrorMessage;
 import com.sample.busbooking.dto.UserBookingHistoryDto;
-import com.hcltech.busbooking.exception.*;
 import com.sample.busbooking.exception.BookingCancelledException;
 import com.sample.busbooking.exception.ControllerExceptionHandler;
 import com.sample.busbooking.exception.DuplicateBookingException;
